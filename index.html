@@ -142,4 +142,51 @@
 
         if (E_I === 'E') {
             atts = ['e', 'i', 'e', 'i'];
-        } else if (E_I ===
+        } else if (E_I === 'I') {
+            atts = ['i', 'e', 'i', 'e'];
+        }
+
+        if (E_I && J_P) {
+            if (E_I === 'E' && J_P === 'P') {
+                funcs = ['N/S', 'T/F', 'F/T', 'S/N'];
+            } else if (E_I === 'E' && J_P === 'J') {
+                funcs = ['T/F', 'N/S', 'S/N', 'F/T'];
+            } else if (E_I === 'I' && J_P === 'P') {
+                funcs = ['T/F', 'N/S', 'S/N', 'F/T'];
+            } else if (E_I === 'I' && J_P === 'J') {
+                funcs = ['N/S', 'T/F', 'F/T', 'S/N'];
+            }
+        }
+
+        if (E_I && J_P && N_S) {
+            let opp = (N_S === 'N') ? 'S' : 'N';
+            funcs = funcs.map(f => f.replace('N/S', N_S).replace('S/N', opp));
+        }
+
+        if (E_I && J_P && T_F) {
+            let opp = (T_F === 'T') ? 'F' : 'T';
+            funcs = funcs.map(f => f.replace('T/F', T_F).replace('F/T', opp));
+        }
+
+        const finalOutput = funcs.map((f, i) => `${f} ${atts[i]}`).join(' — ');
+        resultDiv.innerText = finalOutput;
+        copyBtn.innerText = "複製結果"; 
+    }
+
+    slot1.addEventListener('change', updateLogic);
+    slot2.addEventListener('change', updateLogic);
+    slot3.addEventListener('change', updateLogic);
+    slot4.addEventListener('change', updateLogic);
+
+    copyBtn.addEventListener('click', () => {
+        const textToCopy = resultDiv.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            copyBtn.innerText = "已複製！";
+        }).catch(err => {
+            console.error('複製失敗: ', err);
+            alert('瀏覽器不支援或無權限，請手動複製');
+        });
+    });
+</script>
+</body>
+</html>
