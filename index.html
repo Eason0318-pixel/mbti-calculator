@@ -11,7 +11,7 @@
         background-color: #f9f9f9;
     }
     .container {
-        max-width: 600px;
+        max-width: 800px; /* 已修改：擴展最大寬度以容納更長的選項文字 */
         margin: 0 auto;
         padding: 30px;
         background: #ffffff;
@@ -26,6 +26,7 @@
     .inputs {
         display: flex;
         justify-content: center;
+        flex-wrap: wrap; /* 已修改：允許在螢幕寬度不足時自動換行 */
         gap: 15px;
         margin-bottom: 20px;
     }
@@ -35,6 +36,7 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         background-color: #fff;
+        max-width: 100%; /* 已修改：防止單一選單超出螢幕邊界 */
     }
     select:disabled {
         background-color: #eee;
@@ -74,28 +76,28 @@
     <h2>MBTI 認知功能計算機</h2>
     <div class="inputs">
         <select id="slot1">
-            <option value="">1號 (E/I)</option>
+            <option value="">態度類型 (E / I)</option>
             <option value="E">E</option>
             <option value="I">I</option>
         </select>
         <select id="slot2" disabled>
-            <option value="">2號 (N/S)</option>
+            <option value="">非理性功能類型 (N / S)</option>
             <option value="N">N</option>
             <option value="S">S</option>
         </select>
         <select id="slot3" disabled>
-            <option value="">3號 (T/F)</option>
+            <option value="">理性功能類型 (T / F)</option>
             <option value="T">T</option>
             <option value="F">F</option>
         </select>
         <select id="slot4" disabled>
-            <option value="">4號 (J/P)</option>
+            <option value="">外傾功能類型 (J / P)</option>
             <option value="J">J</option>
             <option value="P">P</option>
         </select>
     </div>
     <div class="result-box" id="result">
-        _ - _ - _ - _
+        _ _ — _ _ — _ _ — _ _
     </div>
     <button class="copy-btn" id="copyBtn">複製結果</button>
 </div>
@@ -114,7 +116,6 @@
         const v3 = slot3.value;
         const v4 = slot4.value;
 
-        // 規則1：若 1 號未填，禁用並清空 4、2、3 號
         if (v1 === "") {
             slot4.disabled = true; slot4.value = "";
             slot2.disabled = true; slot2.value = "";
@@ -123,7 +124,6 @@
             slot4.disabled = false;
         }
 
-        // 規則2：若 4 號未填，禁用並清空 2、3 號
         if (slot4.disabled || v4 === "") {
             slot2.disabled = true; slot2.value = "";
             slot3.disabled = true; slot3.value = "";
@@ -132,80 +132,14 @@
             slot3.disabled = false;
         }
 
-        // 重新讀取當前欄位的值
         const E_I = slot1.value;
         const N_S = slot2.value;
         const T_F = slot3.value;
         const J_P = slot4.value;
 
-        let outputArr = ["_", "_", "_", "_"];
+        let funcs = ["_", "_", "_", "_"];
+        let atts = ["_", "_", "_", "_"];
 
-        // 判斷內外傾態度順序
         if (E_I === 'E') {
-            outputArr = ["_e", "_i", "_e", "_i"];
-        } else if (E_I === 'I') {
-            outputArr = ["_i", "_e", "_i", "_e"];
-        }
-
-        // 當 1 號與 4 號皆填入時，決定四個位置的功能屬性
-        if (E_I && J_P) {
-            let dom = '', aux = '', tert = '', inf = '';
-            
-            // 依據 MBTI 功能動態法則判定
-            if (E_I === 'E' && J_P === 'P') {
-                dom = 'N/S'; aux = 'T/F'; tert = 'F/T'; inf = 'S/N';
-            } else if (E_I === 'E' && J_P === 'J') {
-                dom = 'T/F'; aux = 'N/S'; tert = 'S/N'; inf = 'F/T';
-            } else if (E_I === 'I' && J_P === 'P') {
-                dom = 'T/F'; aux = 'N/S'; tert = 'S/N'; inf = 'F/T';
-            } else if (E_I === 'I' && J_P === 'J') {
-                dom = 'N/S'; aux = 'T/F'; tert = 'F/T'; inf = 'S/N';
-            }
-
-            outputArr[0] = dom + outputArr[0].charAt(1);
-            outputArr[1] = aux + outputArr[1].charAt(1);
-            outputArr[2] = tert + outputArr[2].charAt(1);
-            outputArr[3] = inf + outputArr[3].charAt(1);
-        }
-
-        // 替換 2 號位 (N/S) 的具體結果
-        if (E_I && J_P && N_S) {
-            let opp = (N_S === 'N') ? 'S' : 'N';
-            for (let i = 0; i < 4; i++) {
-                outputArr[i] = outputArr[i].replace('N/S', N_S).replace('S/N', opp);
-            }
-        }
-
-        // 替換 3 號位 (T/F) 的具體結果
-        if (E_I && J_P && T_F) {
-            let opp = (T_F === 'T') ? 'F' : 'T';
-            for (let i = 0; i < 4; i++) {
-                outputArr[i] = outputArr[i].replace('T/F', T_F).replace('F/T', opp);
-            }
-        }
-
-        // 輸出至網頁並重置按鈕文字
-        resultDiv.innerText = outputArr.join(' - ');
-        copyBtn.innerText = "複製結果"; 
-    }
-
-    // 綁定事件監聽器
-    slot1.addEventListener('change', updateLogic);
-    slot2.addEventListener('change', updateLogic);
-    slot3.addEventListener('change', updateLogic);
-    slot4.addEventListener('change', updateLogic);
-
-    // 複製按鈕功能
-    copyBtn.addEventListener('click', () => {
-        const textToCopy = resultDiv.innerText;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            copyBtn.innerText = "已複製！";
-        }).catch(err => {
-            console.error('複製失敗: ', err);
-            alert('瀏覽器不支援或無權限，請手動複製');
-        });
-    });
-
-</script>
-</body>
-</html>
+            atts = ['e', 'i', 'e', 'i'];
+        } else if (E_I ===
